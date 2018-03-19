@@ -9,6 +9,7 @@ import org.apache.spark.sql.SparkSession
 object TypedOperation {
   
   case class Employee(name: String, age: Long, depId: Long, gender: String, salary: Long)
+  case class Department(id: Long, name: String)
   
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
@@ -22,9 +23,14 @@ object TypedOperation {
     
     val employee = spark.read.json("C:\\Users\\CTWLPC\\Desktop\\employee.json")
     val employee2 = spark.read.json("C:\\Users\\CTWLPC\\Desktop\\employee2.json")
+    val department = spark.read.json("C:\\Users\\CTWLPC\\Desktop\\department.json")
+    
+    
     
     val employeeDS = employee.as[Employee]
     val employeeDS2 = employee2.as[Employee]
+    val departmentDS = department.as[Department]
+    
     println(employeeDS.rdd.partitions.size)
     
 //    // coalesce和repartition操作
@@ -58,9 +64,36 @@ object TypedOperation {
 //    employeeDS.filter(employee => employee.age > 30).show()
 //    employeeDS.intersect(employeeDS2).show()
 
-    
-    
-    
+    // map：将数据集中的每条数据都做一个映射，返回一条新数据
+    // flatMap：数据集中的每条数据都可以返回多条数据
+    // mapPartitions：一次性对一个partition中的数据进行处理
+//    employeeDS.map { employee => (employee.name, employee.salary + 1000) }.show()
+//    departmentDS.flatMap { 
+//      department => Seq(Department(department.id + 1, department.name + "_1"), Department(department.id + 2, department.name + "_2") )
+//      }.show()
+      
+//    employeeDS.mapPartitions { employees => {
+//        val seq = Seq()
+//        while(employees.hasNext) {
+//        var emp = employees.next() 
+//        seq :+ (emp.name, emp.salary + 1000)
+//        }
+//        Iterator(seq)
+//      } 
+//    }.show()
+      
+      
+    employeeDS.mapPartitions { employees => {
+        // 创建一个可变的数组
+        val result = scala.collection.mutable.ArrayBuffer[(String, Long)]()
+        while(employees.hasNext){
+          var emp = employees.next()
+          result += ((emp.name, emp.salary + 1000))
+        }
+        result.iterator
+      } 
+    }.show()
+
     
   }
  
