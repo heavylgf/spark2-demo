@@ -82,17 +82,38 @@ object TypedOperation {
 //      } 
 //    }.show()
       
-      
-    employeeDS.mapPartitions { employees => {
-        // 创建一个可变的数组
-        val result = scala.collection.mutable.ArrayBuffer[(String, Long)]()
-        while(employees.hasNext){
-          var emp = employees.next()
-          result += ((emp.name, emp.salary + 1000))
-        }
-        result.iterator
-      } 
-    }.show()
+//    employeeDS.mapPartitions { employees => {
+//        // 创建一个可变的数组
+//        val result = scala.collection.mutable.ArrayBuffer[(String, Long)]()
+//        while(employees.hasNext){
+//          var emp = employees.next()
+//          result += ((emp.name, emp.salary + 1000))
+//        }
+//        result.iterator
+//      } 
+//    }.show()
+    
+    // typed操作：joinWith
+//    employeeDS.joinWith(departmentDS, $"depId" === $"id").show()   
+    
+    // typed操作：sort
+//    employeeDS.sort($"salary".desc).show()  
+//    employeeDS.select("name", "salary").sort($"salary".desc).show()  
+    
+    // typed操作：randomSplit、sample
+    // randomSplit 根据权重将数据切成相应的分数
+    // sample 按照比例随机抽取出数据
+//    val employeeDSArr = employeeDS.randomSplit(Array(3, 10, 20))  
+//    employeeDSArr.foreach { ds => ds.show() }  
+//    
+//    employeeDS.sample(false, 0.3).show()  
+    
+    // untyped操作：select、where、groupBy、agg、col、join
+    
+    
+    
+    
+    
 
     
   }
