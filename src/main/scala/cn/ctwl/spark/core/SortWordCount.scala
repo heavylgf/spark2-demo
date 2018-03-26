@@ -3,6 +3,7 @@ package cn.ctwl.spark.core
 import org.apache.spark.sql.SparkSession
 
 /**
+ * 第38讲-Spark核心编程：高级编程之基于排序机制的wordcount程序
  * 排序的wordcount程序
  * 
  */
