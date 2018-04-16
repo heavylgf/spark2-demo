@@ -17,46 +17,62 @@
 2、Kryo序列化机制：Spark也支持使用Kryo类库来进行序列化。Kryo序列化机制比Java序列化机制更快，而且序列化后的数据占用的空间更小，通常比Java序列化的数据占用的空间要小10倍。Kryo序列化机制之所以不是默认序列化机制的原因是，有些类型虽然实现了Seriralizable接口，但是它也不一定能够进行序列化；此外，如果你要得到最佳的性能，Kryo还要求你在Spark应用程序中，对所有你需要序列化的类型都进行注册。
 
 #### 如何使用Kryo序列化机制（一）
-1、如果要使用Kryo序列化机制，首先要用SparkConf设置一个参数，使用new SparkConf().set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")即可，即将Spark的序列化器设置为KryoSerializer。这样，Spark在内部的一些操作，比如Shuffle，进行序列化时，就会使用Kryo类库进行高性能、快速、更低内存占用量的序列化了。
-2、使用Kryo时，它要求是需要序列化的类，是要预先进行注册的，以获得最佳性能——如果不注册的话，那么Kryo必须时刻保存类型的全限定名，反而占用不少内存。Spark默认是对Scala中常用的类型自动注册了Kryo的，都在AllScalaRegistry类中。
+1、如果要使用Kryo序列化机制，首先要用SparkConf设置一个参数，使用
+
+   new SparkConf().set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")即可，
+
+         即将Spark的序列化器设置为KryoSerializer。这样，Spark在内部的一些操作，比如Shuffle，进行序列化时，就会使用Kryo类库进行高性能、快速、更低内存占用量的序列化了。
+
+2、使用Kryo时，它要求是需要序列化的类，是要预先进行注册的，以获得最佳性能——如果不注册的话，那么Kryo必须时刻保存类型的全限定名，反而占用不少内存。
+   Spark默认是对Scala中常用的类型自动注册了Kryo的，都在AllScalaRegistry类中。
 
 3、但是，比如自己的算子中，使用了外部的自定义类型的对象，那么还是需要将其进行注册。
 
 #### （实际上，下面的写法是错误的，因为counter不是共享的，所以累加的功能是无法实现的）
 val counter = new Counter();
+
 val numbers = sc.parallelize(Array(1, 2, 3, 4, 5))
+
 numbers.foreach(num => counter.add(num));
 
 #### 如何使用Kryo序列化机制（二）
+
 
 如果要注册自定义的类型，那么就使用如下的代码，即可：
 
 Scala版本：
 val conf = new SparkConf().setMaster(...).setAppName(...)
+
 conf.registerKryoClasses(Array(classOf[Counter] ))
+
 val sc = new SparkContext(conf)
 
 Java版本：
+
 SparkConf conf = new SparkConf().setMaster(...).setAppName(...)
+
 conf.registerKryoClasses(Counter.class)
+
 JavaSparkContext sc = new JavaSparkContext(conf)
 
 #### 优化Kryo类库的使用
 1、优化缓存大小
 
-（1）如果注册的要序列化的自定义的类型，本身特别大，比如包含了超过100个field。那么就会导致要序列化的对象过大。此时就需要对Kryo本身进行优化。因为Kryo内部的缓存可能不够存放那么大的class对象。此时就需要调用SparkConf.set()方法，设置spark.kryoserializer.buffer.mb参数的值，将其调大。
+(1)如果注册的要序列化的自定义的类型，本身特别大，比如包含了超过100个field。那么就会导致要序列化的对象过大。此时就需要对Kryo本身进行优化。
+        因为Kryo内部的缓存可能不够存放那么大的class对象。此时就需要调用SparkConf.set()方法，设置spark.kryoserializer.buffer.mb参数的值，将其调大。
 
 (2)默认情况下它的值是2，就是说最大能缓存2M的对象，然后进行序列化。可以在必要时将其调大。比如设置为10。
 
 2、预先注册自定义类型
-(1)虽然不注册自定义类型，Kryo类库也能正常工作，但是那样的话，对于它要序列化的每个对象，都会保存一份它的全限定类名。此时反而会耗费大量内存。因此通常都建议预先注册号要序列化的自定义的类。
+
+        虽然不注册自定义类型，Kryo类库也能正常工作，但是那样的话，对于它要序列化的每个对象，都会保存一份它的全限定类名。此时反而会耗费大量内存。因此通常都建议预先注册号要序列化的自定义的类。
 
 #### 在什么场景下使用Kryo序列化类库？
 1、首先，这里讨论的都是Spark的一些普通的场景，一些特殊的场景，比如RDD的持久化，在后面会讲解。这里先不说。
 
 2、那么，这里针对的Kryo序列化类库的使用场景，就是算子函数使用到了外部的大数据的情况。比如说吧，我们在外部定义了一个封装了应用所有配置的对象，比如自定义了一个MyConfiguration对象，里面包含了100m的数据。然后，在算子函数里面，使用到了这个外部的大对象。
 
-3、此时呢，如果默认情况下，让Spark用java序列化机制来序列化这种外部的大对象，那么就会导致，序列化速度缓慢，并且序列化以后的数据还是比较大，比较占用内存空间。
+        此时呢，如果默认情况下，让Spark用java序列化机制来序列化这种外部的大对象，那么就会导致，序列化速度缓慢，并且序列化以后的数据还是比较大，比较占用内存空间。
 
-4、因此，在这种情况下，比较适合，切换到Kryo序列化类库，来对外部的大对象进行序列化操作。一是，序列化速度会变快；二是，会减少序列化后的数据占用的内存空间。
+        因此，在这种情况下，比较适合，切换到Kryo序列化类库，来对外部的大对象进行序列化操作。一是，序列化速度会变快；二是，会减少序列化后的数据占用的内存空间。
 

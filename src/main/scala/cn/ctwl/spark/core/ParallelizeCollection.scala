@@ -2,6 +2,10 @@ package cn.ctwl.spark.core
 
 import org.apache.spark.sql.SparkSession
 
+/**
+ * 并行化集合创建RDD
+ * 
+ */
 object ParallelizeCollection {
   
   def main(args: Array[String]): Unit = {
