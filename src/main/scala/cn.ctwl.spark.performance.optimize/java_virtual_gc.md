@@ -44,7 +44,9 @@ new SparkConf().set("spark.storage.memoryFraction", "0.5")即可，
 
 #### 如果发现，在task执行期间，大量full gc发生了，那么说明，年轻代的Eden区域，给的空间不够大。此时可以执行一些操作来优化垃圾回收行为：
 1、包括降低spark.storage.memoryFraction的比例，给年轻代更多的空间，来存放短时间存活的对象；
+
 2、给Eden区域分配更大的空间，使用-Xmn即可，通常建议给Eden区域，预计大小的4/3；
+
 3、如果使用的是HDFS文件，那么很好估计Eden区域大小，如果每个executor有4个task，然后每个hdfs压缩块解压缩后大小是3倍，此外每个hdfs块的大小是64M，那么Eden区域的预计大小就是：4 * 3 * 64MB，然后呢，再通过-Xmn参数，将Eden区域大小设置为4 * 3 * 64 * 4/3。
 
 #### 最后一点总结
@@ -52,6 +54,7 @@ new SparkConf().set("spark.storage.memoryFraction", "0.5")即可，
 
 #### 一些高级的参数
 1、-XX:SurvivorRatio=4：如果值为4，那么就是两个Survivor跟Eden的比例是2:4，也就是说每个Survivor占据的年轻代的比例是1/6，所以，你其实也可以尝试调大Survivor区域的大小。
+
 2、-XX:NewRatio=4：调节新生代和老年代的比例
 
 
