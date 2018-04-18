@@ -48,7 +48,7 @@ object HiveDataSource {
 		// 将DataFrame中的数据保存到hive表中
 		
 		// 接着将DataFrame中的数据保存到good_student_infos表中
-    hiveContext.sql("DROP TABLE IF EXISTS good_student_infos");  
+    hiveContext.sql("DROP TABLE IF EXISTS good_student_infos");
 //    goodStudentsDF.saveAsTable("good_student_infos");  
 //    
 //    // 第四个功能，可以用table()方法，针对hive表，直接创建DataFrame

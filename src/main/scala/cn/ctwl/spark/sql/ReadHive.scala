@@ -16,11 +16,12 @@ object ReadHive {
     val spark = SparkSession
       .builder()
       .master("local[2]")
-      .appName("Spark SQL Hive App")
+      .appName("ReadHive")
       .config("spark.sql.warehouse.dir", warehouseLocation).enableHiveSupport().getOrCreate()
 
     import spark.sql
     import  spark.implicits
+    
     spark.sql("use default")
     spark.sql("select student.Sname,course.Cname,sc.Grade from student join sc " +
       "on student.Sno=sc.Sno " +

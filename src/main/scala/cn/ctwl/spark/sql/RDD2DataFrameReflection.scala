@@ -65,9 +65,7 @@ object RDD2DataFrameReflection extends App {
     }  
     studentRDD.collect().foreach { stu => println(stu.id + ":" + stu.name + ":" + stu.age) }  
       
-      
-      
-      
     
-  
 }
+
+
