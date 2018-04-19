@@ -14,6 +14,7 @@ import org.apache.spark.sql.functions._
  * 内置函数的使用countDistinct()
  * 
  * 根据每天的用户访问日志和用户购买日志，统计每日的uv和销售额
+ * 用户访问日志可以统计uv，用户购买日志可以统计销售额
  * 
  */
 object DailyUV {
@@ -32,7 +33,7 @@ object DailyUV {
     
     // 这里着重说明一下！！！
     // 要使用Spark SQL的内置函数，就必须在这里导入SQLContext下的隐式转换
-//    import sqlContext.implicits._
+    import sqlContext.implicits._
     
     // 构造用户访问日志数据，并创建DataFrame
     
@@ -73,18 +74,16 @@ object DailyUV {
     // 然后，调用agg()方法 ，第一个参数，必须，必须，传入之前在groupBy()方法中出现的字段
     // 第二个参数，传入countDistinct、sum、first等，Spark提供的内置函数
     // 内置函数中，传入的参数，也是用单引号作为前缀的，其他的字段
-//    userAccessLogRowDF.groupBy("date")
-//        .agg('date, countDistinct('userid))  
-//        .map { row => Row(row(1), row(2)) }   
-//        .collect()
-//        .foreach(println)  
+
     // 通过date 分组
     userAccessLogRowDF.groupBy("date")
         // 通过agg方法来进行聚合，按照date聚合，对每组进行去重统计总数
-        .agg('date, countDistinct('userid))  
+        .agg('date, countDistinct('userid)) 
+        // 这里直接map 会报错
 //        .map { row => Row(row(1), row(2)) }   
 //        .collect()
 //        .foreach(println) 
+        .foreach { row => println(row(1), row(2)) }
     
     
   }
