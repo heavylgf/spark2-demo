@@ -2,7 +2,6 @@ package cn.ctwl.spark.sql
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.SQLContext
-import org.scalacheck.Prop.False
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.types.StructField
