@@ -11,13 +11,14 @@ object HDFSFile {
     val spark = SparkSession
         .builder()
         .appName("LocalFile")
-        .master("local")
-        .config("spark.sql.warehouse.dir", "C:\\Users\\CTWLPC\\Desktop\\spark-warehouse")
+//        .master("local")
+//        .config("spark.sql.warehouse.dir", "C:\\Users\\CTWLPC\\Desktop\\spark-warehouse")
         .getOrCreate()
         
     val sc = spark.sparkContext
     
-    val lines = sc.textFile("hdfs://spark1:9000/spark.txt", 1)
+//    val lines = sc.textFile("hdfs://spark1:9000/spark.txt", 1)
+    val lines = sc.textFile("hdfs://spark1:9000/test_dat/helloworld.txt", 1)
     val count = lines.map { line => line.length() }.reduce(_ + _)
     
     println("files count is :" + count)

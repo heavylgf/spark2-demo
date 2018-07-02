@@ -12,13 +12,14 @@ object WordCount {
     val spark = SparkSession
         .builder()
         .appName("WordCount")
-        .master("local")
-        .config("spark.sql.warehouse.dir", "C:\\Users\\CTWLPC\\Desktop\\spark-warehouse")
+//        .master("local")   // 在本地执行的时候才设置
+//        .config("spark.sql.warehouse.dir", "C:\\Users\\CTWLPC\\Desktop\\spark-warehouse")
         .getOrCreate()
         
     val sc = spark.sparkContext
     
-    val lines = sc.textFile("C:\\Users\\CTWLPC\\Desktop\\spark.txt", 1)
+//    val lines = sc.textFile("C:\\Users\\CTWLPC\\Desktop\\spark.txt", 1)
+    val lines = sc.textFile("hdfs://spark1:9000/test_dat/helloworld.txt", 1)
     
 //    val employee = spark.read.json("C:\\Users\\CTWLPC\\Desktop\\employee.json")
     val words = lines.flatMap { line => line.split(" ") }
